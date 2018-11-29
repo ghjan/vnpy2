@@ -1,18 +1,5 @@
 FROM ubuntu:16.04
 
-# 时区设置
-ENV TZ=Asia/Shanghai
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# 中文支持
-RUN locale-gen zh_CN.UTF-8 \
-    && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
-RUN locale-gen zh_CN.UTF-8
-ENV LANG zh_CN.UTF-8
-ENV LANGUAGE zh_CN:zh
-ENV LC_ALL zh_CN.UTF-8
-
-
 ## 替换 apt 源为阿里云，在本地构建镜像时，取消注释，使用阿里云的 apt 源
 RUN echo "" > /etc/apt/sources.list \
     && echo "deb http://mirrors.aliyun.com/ubuntu/ xenial main multiverse restricted universe" >> /etc/apt/sources.list \
@@ -31,7 +18,19 @@ RUN apt-get clean \
     && apt-get update
 
 # 安装编译环境
-RUN apt-get install -y build-essential libboost-all-dev python-dev cmake
+RUN apt-get install -y locales build-essential libboost-all-dev python-dev cmake
+
+# 时区设置
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# 中文支持
+RUN locale-gen zh_CN.UTF-8 \
+    && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
+RUN locale-gen zh_CN.UTF-8
+ENV LANG zh_CN.UTF-8
+ENV LANGUAGE zh_CN:zh
+ENV LC_ALL zh_CN.UTF-8
 
 # 安装 conda
 RUN echo "从 apt 获取软件" \
@@ -47,6 +46,7 @@ RUN echo "从 apt 获取软件" \
     && ln -s /opt/conda/bin/python /usr/local/bin/python \
     && ln -s /opt/conda/bin/conda /usr/local/bin/conda \
     && ln -s /opt/conda/bin/pip /usr/local/bin/pip \
+    && echo " export PATH=/opt/conda/bin/:$PATH" >> /etc/profile \
     && echo "从 conda 安装 python 库" \
     && conda install -y pymongo bsddb \
     && conda clean -ay \
@@ -54,4 +54,5 @@ RUN echo "从 apt 获取软件" \
 RUN  mkdir -p /opt/vnpy
 WORKDIR /opt/vnpy
 COPY requirements.txt /opt/vnpy
-RUN  pip install -i http://pypi.douban.com/simple/ -r requirements.txt --trusted-host pypi.douban.com
+RUN pip install -i http://pypi.douban.com/simple/ --upgrade pip --trusted-host pypi.douban.com \
+    && pip install -i http://pypi.douban.com/simple/ -r requirements.txt --trusted-host pypi.douban.com
