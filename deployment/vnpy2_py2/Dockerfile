@@ -51,3 +51,7 @@ RUN echo "从 apt 获取软件" \
     && conda install -y pymongo bsddb \
     && conda clean -ay \
     && echo "安装结束"
+RUN  mkdir -p /opt/vnpy
+WORKDIR /opt/vnpy
+COPY requirements.txt /opt/vnpy
+RUN  pip install -i http://pypi.douban.com/simple/ -r requirements.txt --trusted-host pypi.douban.com
