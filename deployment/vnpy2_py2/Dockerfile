@@ -1,5 +1,7 @@
 FROM ubuntu:16.04
 
+ENV PATH /opt/conda/bin:$PATH
+
 ## 替换 apt 源为阿里云，在本地构建镜像时，取消注释，使用阿里云的 apt 源
 RUN echo "" > /etc/apt/sources.list \
     && echo "deb http://mirrors.aliyun.com/ubuntu/ xenial main multiverse restricted universe" >> /etc/apt/sources.list \
@@ -46,7 +48,6 @@ RUN echo "从 apt 获取软件" \
     && ln -s /opt/conda/bin/python /usr/local/bin/python \
     && ln -s /opt/conda/bin/conda /usr/local/bin/conda \
     && ln -s /opt/conda/bin/pip /usr/local/bin/pip \
-    && echo " export PATH=/opt/conda/bin/:$PATH" >> /etc/profile \
     && echo "从 conda 安装 python 库" \
     && conda install -y pymongo bsddb \
     && conda clean -ay \
